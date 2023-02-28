@@ -9,39 +9,35 @@ socketio = SocketIO(app)
 
 rooms = {}
 
-def generate_unique_code(length):
-    while True:
-        code = ""
-        for _ in range(length):
-            code += random.choice(ascii_uppercase)
-        
+def generate_unique_code(length: int, max_tries: int = 10) -> str:
+    for _ in range(max_tries):
+        code = "".join(random.choices(ascii_uppercase, k=length))
         if code not in rooms:
-            break
-    
-    return code
+            return code
+    raise Exception("Could not generate a unique code.")
 
 @app.route("/", methods=["POST", "GET"])
 def home():
     session.clear()
     if request.method == "POST":
-        name = request.form.get("name")
-        code = request.form.get("code")
-        join = request.form.get("join", False)
-        create = request.form.get("create", False)
+        name: str = request.form.get("name")
+        code: str = request.form.get("code")
+        join_room: bool = "join" in request.form
+        create_room: bool = "create" in request.form
 
         if not name:
             return render_template("home.html", error="Please enter a name.", code=code, name=name)
 
-        if join != False and not code:
+        if join_room and not code:
             return render_template("home.html", error="Please enter a room code.", code=code, name=name)
-        
-        room = code
-        if create != False:
+
+        room = code if create_room else ""
+        if create_room:
             room = generate_unique_code(4)
             rooms[room] = {"members": 0, "messages": []}
         elif code not in rooms:
             return render_template("home.html", error="Room does not exist.", code=code, name=name)
-        
+
         session["room"] = room
         session["name"] = name
         return redirect(url_for("room"))
