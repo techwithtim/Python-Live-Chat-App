@@ -1,52 +1,70 @@
-{% extends 'base.html' %} {% block content %}
-<div class="message-box">
-  <h2>Chat Room: {{code}}</h2>
-  <div class="messages" id="messages"></div>
-  <div class="inputs">
-    <input
-      type="text"
-      rows="3"
-      placeholder="Message"
-      name="message"
-      id="message"
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat App</title>
+    <link
+      rel="stylesheet"
+      href="{{url_for('static', filename='css/style.css')}}"
     />
-    <button type="button" name="send" id="send-btn" onClick="sendMessage()">
-      Send
-    </button>
-  </div>
-</div>
-<script type="text/javascript">
-  var socketio = io();
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+      integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    {% extends 'base.html' %} {% block content %}
+    <div class="message-box">
+      <h2>Chat Room: {{code}}</h2>
+      <div class="messages" id="messages"></div>
+      <div class="inputs">
+        <input
+          type="text"
+          rows="3"
+          placeholder="Message"
+          name="message"
+          id="message"
+        />
+        <button type="button" name="send" id="send-btn" onClick="sendMessage()">
+          Send
+        </button>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var socketio = io();
 
-  const messages = document.getElementById("messages");
+      const messages = document.getElementById("messages");
 
-  const createMessage = (name, msg) => {
-    const content = `
+      const createMessage = (name, msg) => {
+        const content = `
     <div class="text">
         <span>
-            <strong>${name}</strong>: ${msg}
-        </span>
-        <span class="muted">
+          <strong>${name}</strong>: ${msg}
+          </span>
+          <span class="muted">
             ${new Date().toLocaleString()}
-        </span>
-    </div>
+            </span>
+            </div>
     `;
-    messages.innerHTML += content;
-  };
+        messages.innerHTML += content;
+      };
 
-  socketio.on("message", (data) => {
-    createMessage(data.name, data.message);
-  });
+      socketio.on("message", (data) => {
+        createMessage(data.name, data.message);
+      });
 
-  const sendMessage = () => {
-    const message = document.getElementById("message");
-    if (message.value == "") return;
-    socketio.emit("message", { data: message.value });
-    message.value = "";
-  };
-</script>
-{% for msg in messages %}
-<script type="text/javascript">
-  createMessage("{{msg.name}}", "{{msg.message}}");
-</script>
-{% endfor %} {% endblock %}
+      const sendMessage = () => {
+        const message = document.getElementById("message");
+        if (message.value == "") return;
+        socketio.emit("message", { data: message.value });
+        message.value = "";
+      };
+    </script>
+    {% for msg in messages %}
+    <script type="text/javascript">
+      createMessage("{{msg.name}}", "{{msg.message}}");
+    </script>
+    {% endfor %} {% endblock %}
+  </body>
+</html>
